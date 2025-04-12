@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid 15 YouTube Videos (5x3)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            text-align: center;
+            color: #c00;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .video-cell {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            margin-bottom: 10px;
+            background-color: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .control-panel {
+            display: flex;
+            margin-top: 8px;
+        }
+        .url-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px 0 0 4px;
+            font-size: 14px;
+        }
+        .play-button {
+            padding: 8px 16px;
+            background: #c00;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .play-button:hover {
+            background: #900;
+        }
+        .cell-number {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .info-bar {
+            background: #e0e0e0;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .preset-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .preset-button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+        .preset-button:hover {
+            background: #004c99;
+        }
+    </style>
+</head>
+<body>
+    <h1>Grid 15 YouTube Videos (5x3)</h1>
+    
+    <div class="info-bar">
+        <p>Masukkan URL video YouTube pada kotak input di bawah setiap panel video, lalu klik "Play". Video akan diputar dalam mode loop.</p>
+        <p>Tips: Gunakan format URL YouTube standar (https://www.youtube.com/watch?v=VIDEO_ID) atau URL pendek (https://youtu.be/VIDEO_ID).</p>
+    </div>
+
+    <div class="preset-links">
+        <button class="preset-button" onclick="fillWithSampleVideos()">Isi dengan Contoh Video</button>
+        <button class="preset-button" onclick="clearAllVideos()">Hapus Semua Video</button>
+    </div>
+    
+    <div class="grid-container" id="videoGrid"></div>
+
+    <script>
+        // Siapkan grid dengan 15 cell (5x3)
+        const gridContainer = document.getElementById('videoGrid');
+        const videoPlayers = [];
+        const videoIds = Array(15).fill('');
+
+        // Fungsi untuk mendapatkan ID video dari URL YouTube
+        function extractVideoId(url) {
+            if (!url) return null;
+            
+            // Pattern untuk URL YouTube penuh (www.youtube.com/watch?v=ID)
+            const regExp = /^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Fungsi untuk memutar video berdasarkan URL
+        function playVideo(index) {
+            const inputElement = document.getElementById(`urlInput${index}`);
+            const url = inputElement.value.trim();
+            const videoId = extractVideoId(url);
+            
+            if (!videoId) {
+                alert('URL YouTube tidak valid. Gunakan format https://www.youtube.com/watch?v=VIDEO_ID atau https://youtu.be/VIDEO_ID');
+                return;
+            }
+
+            // Simpan ID video
+            videoIds[index] = videoId;
+            saveVideoIds();
+
+            // Perbarui iframe dengan video baru
+            const container = document.getElementById(`videoContainer${index}`);
+            container.innerHTML = `
+                <iframe 
+                    id="player${index}" 
+                    src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&loop=1&playlist=${videoId}&controls=1" 
+                    allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                ></iframe>
+            `;
+        }
+
+        // Simpan ID video ke localStorage
+        function saveVideoIds() {
+            localStorage.setItem('youtubeGridVideoIds', JSON.stringify(videoIds));
+            localStorage.setItem('youtubeGridUrls', JSON.stringify(
+                videoIds.map((id, index) => document.getElementById(`urlInput${index}`).value)
+            ));
+        }
+
+        // Muat ID video dari localStorage
+        function loadVideoIds() {
+            const savedIds = localStorage.getItem('youtubeGridVideoIds');
+            const savedUrls = localStorage.getItem('youtubeGridUrls');
+            
+            if (savedIds && savedUrls) {
+                const parsedIds = JSON.parse(savedIds);
+                const parsedUrls = JSON.parse(savedUrls);
+                
+                parsedIds.forEach((id, index) => {
+                    if (index < 15 && id) {
+                        videoIds[index] = id;
+                        const inputElement = document.getElementById(`urlInput${index}`);
+                        if (inputElement && parsedUrls[index]) {
+                            inputElement.value = parsedUrls[index];
+                        }
+                        
+                        // Muat video
+                        const container = document.getElementById(`videoContainer${index}`);
+                        if (container) {
+                            container.innerHTML = `
+                                <iframe 
+                                    id="player${index}" 
+                                    src="https://www.youtube.com/embed/${id}?enablejsapi=1&autoplay=0&loop=1&playlist=${id}&controls=1" 
+                                    allowfullscreen
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                ></iframe>
+                            `;
+                        }
+                    }
+                });
+            }
+        }
+
+        // Buat grid cells
+        for (let i = 0; i < 15; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'video-cell';
+            
+            const cellNumber = document.createElement('div');
+            cellNumber.className = 'cell-number';
+            cellNumber.textContent = `Video ${i + 1}`;
+            
+            const videoContainer = document.createElement('div');
+            videoContainer.className = 'video-container';
+            videoContainer.id = `videoContainer${i}`;
+            
+            const controlPanel = document.createElement('div');
+            controlPanel.className = 'control-panel';
+            
+            const urlInput = document.createElement('input');
+            urlInput.type = 'text';
+            urlInput.className = 'url-input';
+            urlInput.id = `urlInput${i}`;
+            urlInput.placeholder = 'Masukkan URL YouTube...';
+            
+            const playButton = document.createElement('button');
+            playButton.className = 'play-button';
+            playButton.textContent = 'Play';
+            playButton.onclick = function() { playVideo(i); };
+            
+            controlPanel.appendChild(urlInput);
+            controlPanel.appendChild(playButton);
+            
+            cell.appendChild(cellNumber);
+            cell.appendChild(videoContainer);
+            cell.appendChild(controlPanel);
+            
+            gridContainer.appendChild(cell);
+        }
+
+        // Isi dengan contoh video
+        function fillWithSampleVideos() {
+            const sampleVideoIds = [
+                'dQw4w9WgXcQ', // Rick Astley - Never Gonna Give You Up
+                'kJQP7kiw5Fk', // Luis Fonsi - Despacito
+                'JGwWNGJdvx8', // Ed Sheeran - Shape of You
+                'RgKAFK5djSk', // Wiz Khalifa - See You Again
+                'OPf0YbXqDm0', // Mark Ronson - Uptown Funk
+                'Io0fBr1XBUA', // The Chainsmokers - Closer
+                'QK8mJJJvaes', // Macklemore - Thrift Shop
+                'pRpeEdMmmQ0', // PSY - Gangnam Style
+                'hT_nvWreIhg', // OneRepublic - Counting Stars
+                'fRh_vgS2dFE', // Justin Bieber - Sorry
+                'kffacxfA7G4', // Justin Bieber - Baby
+                'YQHsXMglC9A', // Adele - Hello
+                '9bZkp7q19f0', // PSY - Gangnam Style
+                'nfWlot6h_JM', // Taylor Swift - Shake It Off
+                'QJO3ROT-A4E'  // The Weeknd - Starboy
+            ];
+
+            sampleVideoIds.forEach((id, index) => {
+                if (index < 15) {
+                    const urlInput = document.getElementById(`urlInput${index}`);
+                    urlInput.value = `https://www.youtube.com/watch?v=${id}`;
+                    playVideo(index);
+                }
+            });
+        }
+
+        // Hapus semua video
+        function clearAllVideos() {
+            for (let i = 0; i < 15; i++) {
+                const container = document.getElementById(`videoContainer${i}`);
+                container.innerHTML = '';
+                
+                const urlInput = document.getElementById(`urlInput${i}`);
+                urlInput.value = '';
+                
+                videoIds[i] = '';
+            }
+            saveVideoIds();
+        }
+
+        // Muat video yang tersimpan saat halaman dimuat
+        window.onload = function() {
+            loadVideoIds();
+        };
+    </script>
+</body>
+</html>
