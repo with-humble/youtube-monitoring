@@ -49,7 +49,7 @@
         }
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(3, 1fr);
             gap: 16px;
             margin-top: 20px;
@@ -169,7 +169,7 @@
     <div class="grid-container" id="videoGrid"></div>
 
     <script>
-        // Siapkan grid dengan 15 cell (5x3)
+        // Siapkan grid dengan 12 cell (4x3)
         const gridContainer = document.getElementById('videoGrid');
         const videoPlayers = [];
         const videoIds = Array(15).fill('');
@@ -255,7 +255,7 @@
         }
 
         // Buat grid cells
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 12; i++) {
             const cell = document.createElement('div');
             cell.className = 'video-cell';
             
