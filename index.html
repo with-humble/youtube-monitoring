@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -25,12 +23,6 @@
     <meta name="twitter:title" content="Free Multi YouTube Videos Player Online">
     <meta name="twitter:description" content="Play up to 15 YouTube videos at once, for free. Loop and control them easily.">
     <meta name="twitter:image" content="https://with-humble.github.io/youtube-monitoring/thumbnail.jpg">
-
-
-
-
-
-
     
     <style>
         body {
@@ -56,6 +48,10 @@
             border-radius: 8px;
             padding: 12px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .video-cell.special {
+            background: #fcf8e3;
+            border: 1px solid #faebcc;
         }
         .video-container {
             position: relative;
@@ -125,7 +121,67 @@
         .preset-button:hover {
             background: #004c99;
         }
+        .locked-message {
+            flex: 1;
+            padding: 8px;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
     </style>
+	
+	
+	
+	    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Data banner
+            const banners = [
+                {
+                    id: "3e4fb5ed8d8978a58a4132082043631070712665a5215fab231dd59345052278",
+                    src: "https://fbs.partners/banner/3e4fb5ed8d8978a58a4132082043631070712665a5215fab231dd59345052278/4569/script.js?ibp=302001"
+                },
+                {
+                    id: "b7956c1eae8f5f44a3a6467ba2c4390692952a5d2e496cb142e466b89e8ed2bc",
+                    src: "https://fbs.partners/banner/b7956c1eae8f5f44a3a6467ba2c4390692952a5d2e496cb142e466b89e8ed2bc/8014/script.js?ibp=302001"
+                },
+                {
+                    id: "b8671ad956afb5f73a8a9626c3c0379757ed6500e0fbc480c627ed878b01ded5",
+                    src: "https://fbs.partners/banner/b8671ad956afb5f73a8a9626c3c0379757ed6500e0fbc480c627ed878b01ded5/7882/script.js?ibp=302001"
+                }
+				,
+                {
+                    id: "fd2f76e3ced4b6097ec27e5315a213a651c988ec37da6f5dc875030244244820",
+                    src: "https://fbs.partners/banner/fd2f76e3ced4b6097ec27e5315a213a651c988ec37da6f5dc875030244244820/8004/script.js?ibp=302001"
+                }
+				
+				
+				
+				
+            ];
+
+            // Pilih banner secara acak
+            const randomIndex = Math.floor(Math.random() * banners.length);
+            const selectedBanner = banners[randomIndex];
+
+            // Buat elemen script untuk banner yang dipilih
+            const script = document.createElement('script');
+            script.src = selectedBanner.src;
+            script.id = selectedBanner.id;
+            script.async = true;
+
+            // Temukan elemen center dengan id "banner-container"
+            const bannerContainer = document.getElementById('banner-container');
+            if (bannerContainer) {
+                bannerContainer.appendChild(script);
+            }
+        });
+    </script>
+	
+	
+	
 </head>
 <body>
     <h1>Multi YouTube Videos player online </h1>
@@ -133,13 +189,28 @@
     <div class="info-bar">
         <p>Enter the YouTube video URL in the input box below each video panel, then click "Play". The video will play in loop mode.</p>
         <p>Tips: Use the standard YouTube URL format (https://www.youtube.com/watch?v=VIDEO_ID) or the short URL format (https://youtu.be/VIDEO_ID).</p>
+        <p><strong>Note:</strong> Videos 5, 10, and 15 are pre-set and will automatically play random videos.</p>
     </div>
+
+
+    <!-- Area di mana banner akan ditampilkan, dengan id khusus -->
+    <center id="banner-container">
+        <!-- Banner acak akan ditambahkan di sini oleh JavaScript -->
+    </center>
+
+
+
 
     <div class="preset-links">
         <button class="preset-button" onclick="fillWithSampleVideos()">Isi dengan Contoh Video</button>
         <button class="preset-button" onclick="clearAllVideos()">Hapus Semua Video</button>
     </div>
     
+	
+	
+	
+	
+	
     <div class="grid-container" id="videoGrid"></div>
 
     <script>
@@ -147,6 +218,17 @@
         const gridContainer = document.getElementById('videoGrid');
         const videoPlayers = [];
         const videoIds = Array(15).fill('');
+
+        // List sample video IDs
+        const sampleVideoIds = [
+            'lGbKlod29uw',
+            'IVWM9I3TbQE',
+            'x2fVdXzBIKc',
+            'D-8G5BeFy68',
+            '1HSRoovXlLk',
+            'scnRtDPw12c',
+            'aFDC6LLhygk'
+        ];
 
         // Fungsi untuk mendapatkan ID video dari URL YouTube
         function extractVideoId(url) {
@@ -186,11 +268,39 @@
             `;
         }
 
+        // Fungsi untuk memutar video khusus (untuk cell 5, 10, 15)
+        function playSpecialVideo(index) {
+            // Pilih video secara acak dari daftar sample
+            const randomIndex = Math.floor(Math.random() * sampleVideoIds.length);
+            const videoId = sampleVideoIds[randomIndex];
+            
+            // Simpan ID video
+            videoIds[index] = videoId;
+            
+            // Perbarui iframe dengan video yang dipilih secara acak
+            // Mute=1 diperlukan untuk autoplay di sebagian besar browser modern
+            const container = document.getElementById(`videoContainer${index}`);
+            container.innerHTML = `
+                <iframe 
+                    id="player${index}" 
+                    src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1" 
+                    allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; autoplay"
+                ></iframe>
+            `;
+            
+            // Tambahkan log untuk debugging
+            console.log(`Memainkan video ${videoId} di posisi ${index+1}`);
+        }
+
         // Simpan ID video ke localStorage
         function saveVideoIds() {
             localStorage.setItem('youtubeGridVideoIds', JSON.stringify(videoIds));
             localStorage.setItem('youtubeGridUrls', JSON.stringify(
-                videoIds.map((id, index) => document.getElementById(`urlInput${index}`).value)
+                videoIds.map((id, index) => {
+                    const inputElement = document.getElementById(`urlInput${index}`);
+                    return inputElement ? inputElement.value : '';
+                })
             ));
         }
 
@@ -204,6 +314,11 @@
                 const parsedUrls = JSON.parse(savedUrls);
                 
                 parsedIds.forEach((id, index) => {
+                    // Lewati posisi 4, 9, 14 (yang akan menjadi video 5, 10, 15)
+                    if ((index+1) % 5 === 0) {
+                        return;
+                    }
+                    
                     if (index < 15 && id) {
                         videoIds[index] = id;
                         const inputElement = document.getElementById(`urlInput${index}`);
@@ -226,82 +341,102 @@
                     }
                 });
             }
+            
+            // Muat video khusus untuk posisi 5, 10, 15
+            setTimeout(() => {
+                playSpecialVideo(4);  // index 4 = Video 5
+                playSpecialVideo(9);  // index 9 = Video 10
+                playSpecialVideo(14); // index 14 = Video 15
+            }, 500); // Delay sedikit untuk memastikan video autoplay berfungsi
         }
 
         // Buat grid cells
         for (let i = 0; i < 15; i++) {
+            const isSpecialCell = (i+1) % 5 === 0; // Cek apakah ini adalah cell 5, 10, atau 15
+            
             const cell = document.createElement('div');
-            cell.className = 'video-cell';
+            cell.className = isSpecialCell ? 'video-cell special' : 'video-cell';
             
             const cellNumber = document.createElement('div');
             cellNumber.className = 'cell-number';
-            cellNumber.textContent = `Video ${i + 1}`;
+            cellNumber.textContent = `Video ${i + 1}${isSpecialCell ? ' (Auto)' : ''}`;
             
             const videoContainer = document.createElement('div');
             videoContainer.className = 'video-container';
             videoContainer.id = `videoContainer${i}`;
             
-            const controlPanel = document.createElement('div');
-            controlPanel.className = 'control-panel';
-            
-            const urlInput = document.createElement('input');
-            urlInput.type = 'text';
-            urlInput.className = 'url-input';
-            urlInput.id = `urlInput${i}`;
-            urlInput.placeholder = 'Masukkan URL YouTube...';
-            
-            const playButton = document.createElement('button');
-            playButton.className = 'play-button';
-            playButton.textContent = 'Play';
-            playButton.onclick = function() { playVideo(i); };
-            
-            controlPanel.appendChild(urlInput);
-            controlPanel.appendChild(playButton);
-            
             cell.appendChild(cellNumber);
             cell.appendChild(videoContainer);
-            cell.appendChild(controlPanel);
+            
+            if (!isSpecialCell) {
+                // Untuk cell biasa, tambahkan kontrol input URL dan tombol play
+                const controlPanel = document.createElement('div');
+                controlPanel.className = 'control-panel';
+                
+                const urlInput = document.createElement('input');
+                urlInput.type = 'text';
+                urlInput.className = 'url-input';
+                urlInput.id = `urlInput${i}`;
+                urlInput.placeholder = 'Masukkan URL YouTube...';
+                
+                const playButton = document.createElement('button');
+                playButton.className = 'play-button';
+                playButton.textContent = 'Play';
+                playButton.onclick = function() { playVideo(i); };
+                
+                controlPanel.appendChild(urlInput);
+                controlPanel.appendChild(playButton);
+                cell.appendChild(controlPanel);
+            } else {
+                // Untuk cell khusus, tambahkan pesan bahwa video diputar otomatis
+                const controlPanel = document.createElement('div');
+                controlPanel.className = 'control-panel';
+                
+                const lockedMessage = document.createElement('div');
+                lockedMessage.className = 'locked-message';
+                lockedMessage.textContent = 'Video Otomatis - Terkunci';
+                
+                controlPanel.appendChild(lockedMessage);
+                cell.appendChild(controlPanel);
+            }
             
             gridContainer.appendChild(cell);
         }
 
         // Isi dengan contoh video
         function fillWithSampleVideos() {
-            const sampleVideoIds = [
-                'lGbKlod29uw',
-                'IVWM9I3TbQE',
-                'x2fVdXzBIKc',
-                'D-8G5BeFy68',
-                '1HSRoovXlLk',
-                'scnRtDPw12c',
-                '1HSRoovXlLk',
-                'aFDC6LLhygk',
-                '1HSRoovXlLk',
-                '1HSRoovXlLk',
-                'aFDC6LLhygk',
-                '1HSRoovXlLk',
-                'aFDC6LLhygk',
-                '1HSRoovXlLk',
-                '1HSRoovXlLk'  
-            ];
-
-            sampleVideoIds.forEach((id, index) => {
-                if (index < 15) {
-                    const urlInput = document.getElementById(`urlInput${index}`);
-                    urlInput.value = `https://www.youtube.com/watch?v=${id}`;
-                    playVideo(index);
+            for (let i = 0; i < 15; i++) {
+                // Lewati video pada posisi 5, 10, 15 (index 4, 9, 14)
+                if ((i+1) % 5 === 0) {
+                    continue;
                 }
-            });
+                
+                const randomIndex = Math.floor(Math.random() * sampleVideoIds.length);
+                const videoId = sampleVideoIds[randomIndex];
+                
+                const urlInput = document.getElementById(`urlInput${i}`);
+                if (urlInput) {
+                    urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
+                    playVideo(i);
+                }
+            }
         }
 
         // Hapus semua video
         function clearAllVideos() {
             for (let i = 0; i < 15; i++) {
+                // Lewati video pada posisi 5, 10, 15 (index 4, 9, 14)
+                if ((i+1) % 5 === 0) {
+                    continue;
+                }
+                
                 const container = document.getElementById(`videoContainer${i}`);
                 container.innerHTML = '';
                 
                 const urlInput = document.getElementById(`urlInput${i}`);
-                urlInput.value = '';
+                if (urlInput) {
+                    urlInput.value = '';
+                }
                 
                 videoIds[i] = '';
             }
@@ -311,7 +446,35 @@
         // Muat video yang tersimpan saat halaman dimuat
         window.onload = function() {
             loadVideoIds();
+            
+            // Pastikan video khusus di posisi 5, 10, 15 diputar
+            setTimeout(() => {
+                // Load ulang video khusus untuk memastikan autoplay berfungsi
+                playSpecialVideo(4);  // index 4 = Video 5
+                playSpecialVideo(9);  // index 9 = Video 10
+                playSpecialVideo(14); // index 14 = Video 15
+            }, 1000);
         };
     </script>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 </body>
+
+
+<br><br>
+
+<center>
+copy right
+</center>
+
+
+
 </html>
